@@ -24,6 +24,8 @@ function initMediaPipe() {
     });
 
     hands.onResults((results) => {
+        if (!audioCtx) return; // Guard: wait for AudioContext
+
         const detected = results.multiHandLandmarks ?? [];
 
         uiHands.innerText = detected.length;

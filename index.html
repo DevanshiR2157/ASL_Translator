@@ -3,43 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Hand Tracking AR</title>
+    <title>Neon Aura AR — ASL Edition</title>
 
-    <!-- MediaPipe Hands CDN -->
+    <!-- MediaPipe Hands -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
+    <!-- TensorFlow.js (ML fallback) -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
+
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Start Overlay (Required for AudioContext initialization) -->
+    <!-- Start overlay -->
     <div id="startOverlay">
         <h1 style="margin-bottom: 20px; font-weight: 300; letter-spacing: 4px;">NEON AURA AR</h1>
-        <p style="margin-bottom: 40px; color: #888;">Grant camera permissions and click to start audio/visual experience</p>
+        <p style="margin-bottom: 8px; color: #888;">Grant camera access, then click to begin.</p>
+        <p style="margin-bottom: 40px; color: #555; font-size: 0.85rem;">Show your hand and sign any ASL letter A–Y (except J & Z).</p>
         <button class="start-btn" id="startBtn">Enter Experience</button>
     </div>
 
+    <!-- Camera + canvas layers -->
     <div class="video-container">
         <video class="input_video" autoplay playsinline></video>
         <canvas id="bgCanvas"></canvas>
         <canvas id="mainCanvas"></canvas>
     </div>
 
-    <!-- UI Overlay -->
+    <!-- HUD -->
     <div id="hud" class="hidden">
+
+        <!-- System stats -->
         <div class="panel">
-            <div class="stat">Hands Detected: <span class="val" id="ui-hands">0</span></div>
-            <div class="stat">FPS: <span class="val" id="ui-fps">0</span></div>
+            <div class="stat">Hands Detected <span class="val" id="ui-hands">0</span></div>
+            <div class="stat">FPS            <span class="val" id="ui-fps">0</span></div>
+            <div class="stat">ML Model       <span class="val" id="ui-ml-status">Loading…</span></div>
         </div>
-        <div class="panel">
-            <div class="stat">Gesture: <span class="val" id="ui-gesture">None</span></div>
-            <div class="stat">Spread: <span class="val" id="ui-spread">0%</span></div>
+
+        <!-- ASL letter readout -->
+        <div class="panel" id="asl-panel">
+            <span id="ui-letter">–</span>
+            <div class="asl-meta">
+                <span>Confidence: <strong id="ui-confidence">–</strong></span>
+                <span>Source: <strong id="ui-source">–</strong></span>
+            </div>
+            <div class="conf-track">
+                <div id="ui-conf-bar"></div>
+            </div>
         </div>
+
     </div>
 
+    <!-- Theme switcher -->
     <div id="themes" class="hidden">
         <button class="theme-btn active" data-theme="Rainbow">Rainbow</button>
         <button class="theme-btn" data-theme="Cyberpunk">Cyberpunk</button>
@@ -48,8 +66,11 @@
         <button class="theme-btn" data-theme="Galaxy">Galaxy</button>
     </div>
 
-    <!-- App modules — order matters -->
+    <!-- Load order: state → classifiers → effects → gestures → renderer → hands → main -->
     <script src="js/state.js"></script>
+    <script src="js/asl-rules.js"></script>
+    <script src="js/asl-ml.js"></script>
+    <script src="js/asl.js"></script>
     <script src="js/audio.js"></script>
     <script src="js/effects.js"></script>
     <script src="js/gestures.js"></script>

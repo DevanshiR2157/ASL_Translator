@@ -33,15 +33,11 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transform: scaleX(-1); /* Mirror */
+    transform: scaleX(-1);
     z-index: 0;
     filter: brightness(0.6) contrast(1.1);
 }
 
-/*
- * bgCanvas: matrix rain / starfield background
- * mainCanvas: hand skeleton, particles, and effects
- */
 #bgCanvas,
 #mainCanvas {
     position: absolute;
@@ -50,18 +46,11 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transform: scaleX(-1); /* Mirror to match video */
+    transform: scaleX(-1);
 }
 
-#bgCanvas {
-    z-index: 1;
-    pointer-events: none;
-}
-
-#mainCanvas {
-    z-index: 5;
-    pointer-events: none;
-}
+#bgCanvas  { z-index: 1; pointer-events: none; }
+#mainCanvas { z-index: 5; pointer-events: none; }
 
 /* ── HUD ──────────────────────────────────────────── */
 #hud {
@@ -91,12 +80,53 @@ body {
     margin-bottom: 8px;
     font-size: 0.9rem;
     color: rgba(255, 255, 255, 0.8);
-    min-width: 180px;
+    min-width: 200px;
 }
 .stat:last-child { margin-bottom: 0; }
-.stat span.val {
-    font-weight: bold;
+.stat span.val   { font-weight: bold; color: var(--accent); }
+
+/* ── ASL letter display ───────────────────────────── */
+#asl-panel {
+    text-align: center;
+    min-width: 200px;
+}
+
+#ui-letter {
+    display: block;
+    font-size: 5rem;
+    font-weight: 900;
+    line-height: 1;
     color: var(--accent);
+    text-shadow: 0 0 30px var(--accent), 0 0 60px var(--accent);
+    letter-spacing: -2px;
+    margin-bottom: 10px;
+    transition: color 0.15s ease;
+}
+
+.asl-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 8px;
+}
+
+/* Confidence bar track */
+.conf-track {
+    width: 100%;
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+/* Confidence bar fill — width + color set by JS */
+#ui-conf-bar {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.12s ease, background-color 0.3s ease;
 }
 
 /* ── Theme switcher ───────────────────────────────── */
@@ -128,8 +158,8 @@ body {
 }
 
 .theme-btn.active {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.3);
     text-shadow: 0 0 10px white;
 }
 
@@ -137,7 +167,7 @@ body {
 #startOverlay {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0,0,0,0.85);
     z-index: 100;
     display: flex;
     flex-direction: column;

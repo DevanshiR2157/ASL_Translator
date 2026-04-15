@@ -1,32 +1,34 @@
 /**
  * gestures.js
  * -----------
- * Analyses the current hand landmark data and fires side-effects
- * (audio, particles, UI updates) when gestures are recognised.
+ * Per-frame gesture processing.
  *
- * Exports:
- *   detectGestures() — call once per render frame after currentHands is updated.
+ * Now delegates letter detection to asl.js.
+ * Retains pinch detection for the shockwave/audio visual effect
+ * (pinch is also used as the "confirm letter" interaction).
  */
 
 'use strict';
 
-/** Per-hand pinch state to prevent rapid re-triggering. */
 const lastPinchState = [false, false];
 
-/**
- * Inspect `currentHands` for pinch and open-hand gestures.
- * Fires shockwaves, audio zaps, and updates the HUD labels.
- */
 function detectGestures() {
     if (!currentHands.length) return;
 
-    currentHands.forEach((hand, idx) => {
-        // ── Pinch: thumb tip (4) close to index tip (8) ──────────────────────
-        const thumb = hand[4];
-        const index = hand[8];
-        const dist  = getDist(thumb, index);
+    // ── ASL letter classification (primary hand) ──────────────────────────────
+    classifyASL(currentHands[0]);
 
-        const isPinching = dist < 0.05; // 5 % of normalised space
+    // ── Pinch detection on all visible hands (visual/audio effect) ───────────
+    currentHands.forEach((hand, idx) => {
+        const thumb = hand[LM.THUMB_TIP];
+        const index = hand[LM.INDEX_TIP];
+
+        const palmW   = Math.hypot(
+            hand[LM.INDEX_MCP].x - hand[LM.PINKY_MCP].x,
+            hand[LM.INDEX_MCP].y - hand[LM.PINKY_MCP].y
+        );
+        const pinchDist = Math.hypot(thumb.x - index.x, thumb.y - index.y);
+        const isPinching = (pinchDist / (palmW || 1)) < 0.25;
 
         if (isPinching && !lastPinchState[idx]) {
             const midpoint = {
@@ -35,22 +37,8 @@ function detectGestures() {
             };
             createShockwave(mapToCanvas(midpoint), themes[currentTheme](time, 1, 1));
             triggerZap();
-            uiGesture.innerText = 'PINCH !';
         }
 
         lastPinchState[idx] = isPinching;
     });
-
-    // ── Spread / fist: distance from index (8) to pinky (20) ─────────────────
-    if (currentHands[0]) {
-        const spread    = getDist(currentHands[0][8], currentHands[0][20]);
-        const spreadPct = Math.min(Math.round(spread * 300), 100);
-
-        uiSpread.innerText = spreadPct + '%';
-
-        // Only update gesture label when not currently pinching
-        if (!lastPinchState.includes(true)) {
-            uiGesture.innerText = spreadPct > 50 ? 'Open Hand' : 'Fist';
-        }
-    }
 }
